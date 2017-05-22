@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 
 import org.inframiner.ysera.chatter.R;
 
@@ -12,7 +11,7 @@ import org.inframiner.ysera.chatter.R;
  * Created by yoon on 2017. 5. 4..
  */
 
-public class SignInActivity extends AppCompatActivity {
+public class SignInActivity extends UserActivity {
 
     private Fragment mFragment;
     private FragmentManager mFragmentManager;
