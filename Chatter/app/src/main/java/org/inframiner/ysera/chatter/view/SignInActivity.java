@@ -13,6 +13,8 @@ import org.inframiner.ysera.chatter.R;
 
 public class SignInActivity extends UserActivity {
 
+    private static final String TAG = SignInActivity.class.getSimpleName();
+
     private Fragment mFragment;
     private FragmentManager mFragmentManager;
 

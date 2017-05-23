@@ -1,5 +1,6 @@
 package org.inframiner.ysera.chatter.view;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,6 +26,12 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.inframiner.ysera.chatter.R;
+import org.inframiner.ysera.chatter.model.User;
+
+import static org.inframiner.ysera.chatter.common.Common.EXTRA_GOOGLE_RESPONSE_USER;
+import static org.inframiner.ysera.chatter.common.Common.REVOKE_ACCESS_GOOGLE_REQUEST_CODE;
+import static org.inframiner.ysera.chatter.common.Common.SIGN_IN_GOOGLE_REQUEST_CODE;
+import static org.inframiner.ysera.chatter.common.Common.SIGN_OUT_GOOGLE_REQUEST_CODE;
 
 /**
  * Created by yoon on 2017. 5. 22..
@@ -35,12 +42,21 @@ public class UserActivity extends AppCompatActivity
 
     private static final String TAG = UserActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
+    private static final String EXTRA_GOOGLE_REQUEST_CODE = "org.inframincer.ysera.google_request_code";
 
     private FirebaseAuth mFirebaseAuth;
 
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     private GoogleApiClient mGoogleApiClient;
+
+    public static Intent newIntent(Context packageContext, int requestCode) {
+        Intent intent = new Intent(packageContext, UserActivity.class);
+        intent.putExtra(EXTRA_GOOGLE_REQUEST_CODE, requestCode);
+        return intent;
+    }
+
+    private int mGoogleRequestCode;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,12 +85,30 @@ public class UserActivity extends AppCompatActivity
                 }
             }
         };
+
+        mGoogleRequestCode = getIntent().getIntExtra(EXTRA_GOOGLE_REQUEST_CODE, -1);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        switch (mGoogleRequestCode) {
+            case SIGN_IN_GOOGLE_REQUEST_CODE:
+                signInGoogle();
+                break;
+            case SIGN_OUT_GOOGLE_REQUEST_CODE:
+                signOutGoogle();
+                break;
+            case REVOKE_ACCESS_GOOGLE_REQUEST_CODE:
+                revokeAccessGoogle();
+                break;
+        }
     }
 
     @Override
@@ -91,12 +125,19 @@ public class UserActivity extends AppCompatActivity
 
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            Intent intent = new Intent();
             if (result.isSuccess()) {
                 Log.d(TAG, "Google Sign In was successful, authenticate with Firebase");
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
+
+                intent.putExtra(EXTRA_GOOGLE_RESPONSE_USER, setUser(account));
+                setResult(RESULT_OK, intent);
+                finish();
             } else {
                 Log.d(TAG, "Google Sign In failed.");
+                setResult(RESULT_CANCELED, intent);
+                finish();
             }
         }
     }
@@ -155,5 +196,20 @@ public class UserActivity extends AppCompatActivity
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
+    }
+
+    private User setUser(GoogleSignInAccount account) {
+
+        User user = new User();
+
+        if (account != null) {
+            user.setId(account.getId());
+            user.setIdToken(account.getIdToken());
+            user.setEmail(account.getEmail());
+            user.setDisplayName(account.getDisplayName());
+        } else {
+            user = null;
+        }
+        return user;
     }
 }
