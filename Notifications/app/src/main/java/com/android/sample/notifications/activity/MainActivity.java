@@ -17,6 +17,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         String token = FirebaseInstanceId.getInstance().getToken();
-        Log.i(TAG, "onCreate: token:>>" + token);
+        Log.i(TAG, "onCreate: token:>> " + token);
+
+        // notification and data payload type test
+        String nick = getIntent().getStringExtra("Nick");
+        if (nick != null) {
+            Log.i(TAG, "onCreate: nick: " + nick);
+        }
+        String body = getIntent().getStringExtra("body");
+        if (body != null) {
+            Log.i(TAG, "onCreate: body: " + body);
+        }
+        String room = getIntent().getStringExtra("Room");
+        if (room != null) {
+            Log.i(TAG, "onCreate: room: " + room);
+        }
     }
 }
